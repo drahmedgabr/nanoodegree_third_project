@@ -1,5 +1,7 @@
 package com.udacity
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.*
@@ -15,6 +17,10 @@ class LoadingButton @JvmOverloads constructor(
     private var progress = 0f
     private var centerY = 0f
     private var indicatorLoc = 0f
+    private var buttonColor = 0
+    private var animatedButtonColor = 0
+    private var textColor = 0
+    private var progressIndicatorColor = 0
 
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -24,11 +30,14 @@ class LoadingButton @JvmOverloads constructor(
         typeface = Typeface.create("", Typeface.BOLD)
     }
 
-    private val valueAnimator = ValueAnimator()
+    private val valueAnimator = ValueAnimator.ofFloat(1f, 100f)
 
     private var buttonState: ButtonState by Delegates.observable<ButtonState>(ButtonState.Completed) { p, old, new ->
-
+        if(new == ButtonState.Clicked){
+            drawAnimation()
+        }
     }
+
 
 
     init {
@@ -39,7 +48,10 @@ class LoadingButton @JvmOverloads constructor(
             0, 0
         ).apply {
             try {
-                progress = getFloat(R.styleable.LoadingButton_progress, 0f)
+                buttonColor = getInt(R.styleable.LoadingButton_bgColor, 0)
+                animatedButtonColor = getInt(R.styleable.LoadingButton_animatedBtnColor, 0)
+                textColor = getInt(R.styleable.LoadingButton_textColor, 0)
+                progressIndicatorColor = getInt(R.styleable.LoadingButton_progressIndicatorColor, 0)
             } finally {
                 recycle()
             }
@@ -48,8 +60,9 @@ class LoadingButton @JvmOverloads constructor(
 
     override fun performClick(): Boolean {
         super.performClick()
-        progress += 10
-        invalidate()
+        if(buttonState != ButtonState.Clicked){
+            buttonState = ButtonState.Clicked
+        }
         return true
     }
 
@@ -73,13 +86,30 @@ class LoadingButton @JvmOverloads constructor(
         setMeasuredDimension(w, h)
     }
 
+    private fun drawAnimation(){
+        valueAnimator.duration = 10000
+        valueAnimator.addUpdateListener(object: ValueAnimator.AnimatorUpdateListener{
+            override fun onAnimationUpdate(p0: ValueAnimator) {
+                progress = p0.animatedValue as Float
+                invalidate()
+            }
+        })
+        valueAnimator.addListener(object: AnimatorListenerAdapter(){
+            override fun onAnimationEnd(animation: Animator) {
+                super.onAnimationEnd(animation)
+                buttonState = ButtonState.Completed
+            }
+        })
+        valueAnimator.start()
+    }
+
     private fun drawButton(canvas: Canvas) {
 
         centerY = heightSize / 2 - ((paint.descent() + paint.ascent()) / 2)
 
-        drawRect(canvas, resources.getColor(R.color.button_bg, context.theme))
-        if (progress > 0) {
-            drawRect(canvas, resources.getColor(R.color.anim_button_bg, context.theme), progress)
+        drawRect(canvas, buttonColor)
+        if (buttonState == ButtonState.Clicked) {
+            drawRect(canvas, animatedButtonColor, progress)
             drawText(canvas, resources.getString(R.string.button_loading))
             drawIndicator(canvas)
         } else {
@@ -98,7 +128,7 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     private fun drawText(canvas: Canvas, text: String) {
-        paint.color = resources.getColor(R.color.button_txt_color, context.theme)
+        paint.color = textColor
         canvas.drawText(
             text,
             widthSize / 2,
@@ -111,7 +141,7 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     private fun drawIndicator(canvas: Canvas){
-        paint.color = resources.getColor(R.color.loading_indicator_color, context.theme)
+        paint.color = progressIndicatorColor
         val angle = (progress / 100) * 360
         val top = (heightSize / 2) - 40
         val bottom = (heightSize / 2) + 40

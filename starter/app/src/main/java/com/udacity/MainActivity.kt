@@ -33,6 +33,7 @@ class MainActivity : AppCompatActivity() {
         custom_button.setOnClickListener {
             download()
         }
+
     }
 
     private val receiver = object : BroadcastReceiver() {

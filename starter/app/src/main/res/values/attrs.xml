@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="LoadingButton">
-        <attr name="progress" format="float" />
+        <attr name="bgColor" format="integer" />
+        <attr name="animatedBtnColor" format="integer" />
+        <attr name="progressIndicatorColor" format="integer" />
+        <attr name="textColor" format="integer" />
     </declare-styleable>
 </resources>
