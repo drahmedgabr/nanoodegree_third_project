@@ -13,6 +13,8 @@ class LoadingButton @JvmOverloads constructor(
     private var widthSize = 0f
     private var heightSize = 0f
     private var progress = 0f
+    private var centerY = 0f
+    private var indicatorLoc = 0f
 
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -72,10 +74,14 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     private fun drawButton(canvas: Canvas) {
+
+        centerY = heightSize / 2 - ((paint.descent() + paint.ascent()) / 2)
+
         drawRect(canvas, resources.getColor(R.color.button_bg, context.theme))
         if (progress > 0) {
             drawRect(canvas, resources.getColor(R.color.anim_button_bg, context.theme), progress)
             drawText(canvas, resources.getString(R.string.button_loading))
+            drawIndicator(canvas)
         } else {
             drawText(canvas, resources.getString(R.string.button_name))
         }
@@ -83,9 +89,10 @@ class LoadingButton @JvmOverloads constructor(
 
     private fun drawRect(canvas: Canvas, color: Int, progress: Float = widthSize) {
         paint.color = color
+        val progressW = (progress / 100) * widthSize
         canvas.drawRect(
             RectF(
-                0f, 0f, progress, heightSize
+                0f, 0f, progressW, heightSize
             ), paint
         )
     }
@@ -95,9 +102,20 @@ class LoadingButton @JvmOverloads constructor(
         canvas.drawText(
             text,
             widthSize / 2,
-            heightSize / 2 - ((paint.descent() + paint.ascent()) / 2),
+            centerY,
             paint
         )
+        val bounds = Rect()
+        paint.getTextBounds(text, 0, text.length, bounds)
+        indicatorLoc = (widthSize / 2) + ( bounds.width() / 2 ) + 50
+    }
+
+    private fun drawIndicator(canvas: Canvas){
+        paint.color = resources.getColor(R.color.loading_indicator_color, context.theme)
+        val angle = (progress / 100) * 360
+        val top = (heightSize / 2) - 40
+        val bottom = (heightSize / 2) + 40
+        canvas.drawArc(RectF(indicatorLoc, top, indicatorLoc + 80, bottom), 0f, angle, true, paint)
     }
 
 }
