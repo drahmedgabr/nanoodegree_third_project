@@ -9,13 +9,13 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.widget.RadioButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
+import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -79,6 +79,7 @@ class MainActivity : AppCompatActivity() {
         val downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
         downloadID =
             downloadManager.enqueue(request)// enqueue puts the download request in the queue.
+        downloadManager.addListener(applicationContext)
     }
 
     companion object {
@@ -88,4 +89,45 @@ class MainActivity : AppCompatActivity() {
         private const val CHANNEL_ID = "channelId"
     }
 
+
+    private fun DownloadManager.addListener(context: Context){
+        val query = DownloadManager.Query()
+        query.setFilterById(downloadID)
+        val cursor = (context.getSystemService(DOWNLOAD_SERVICE) as DownloadManager)
+            .query(query)
+        if (cursor.moveToFirst()) {
+            val timer = Timer()
+            timer.schedule(object : TimerTask() {
+                override fun run() {
+                    query.setFilterById(downloadID)
+                    val cursor = (context.getSystemService(DOWNLOAD_SERVICE) as DownloadManager)
+                        .query(query)
+                    cursor.moveToFirst()
+                    val status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))
+                    when(status){
+                        DownloadManager.STATUS_SUCCESSFUL -> {
+                            runOnUiThread {
+                                Toast.makeText(context, "Success",Toast.LENGTH_LONG).show()
+                                timer.cancel()
+                            }
+                        }
+                        DownloadManager.STATUS_FAILED -> timer.cancel()
+                        DownloadManager.STATUS_RUNNING -> {}
+                        DownloadManager.STATUS_PAUSED -> {}
+                        DownloadManager.STATUS_PENDING -> {}
+                        DownloadManager.STATUS_FAILED -> {
+                            runOnUiThread {
+                                Toast.makeText(context, "Failed",Toast.LENGTH_LONG).show()
+                                timer.cancel()
+                            }
+                        }
+                    }
+                    if (status == DownloadManager.STATUS_RUNNING) {
+                    } else if (status == DownloadManager.STATUS_SUCCESSFUL) {
+                        timer.cancel()
+                    }
+                }
+            }, 100, 1)
+        }
+    }
 }
