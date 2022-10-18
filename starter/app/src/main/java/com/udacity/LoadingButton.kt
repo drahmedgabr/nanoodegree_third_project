@@ -12,13 +12,14 @@ class LoadingButton @JvmOverloads constructor(
 ) : View(context, attrs, defStyleAttr) {
     private var widthSize = 0f
     private var heightSize = 0f
+    private var progress = 0f
 
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
         textAlign = Paint.Align.CENTER
         textSize = 50.0f
-        typeface = Typeface.create( "", Typeface.BOLD)
+        typeface = Typeface.create("", Typeface.BOLD)
     }
 
     private val valueAnimator = ValueAnimator()
@@ -29,16 +30,32 @@ class LoadingButton @JvmOverloads constructor(
 
 
     init {
-
+        isClickable = true
+        context.theme.obtainStyledAttributes(
+            attrs,
+            R.styleable.LoadingButton,
+            0, 0
+        ).apply {
+            try {
+                progress = getFloat(R.styleable.LoadingButton_progress, 0f)
+            } finally {
+                recycle()
+            }
+        }
     }
 
+    override fun performClick(): Boolean {
+        super.performClick()
+        progress += 10
+        invalidate()
+        return true
+    }
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
         if (canvas != null) {
             drawButton(canvas)
         }
-
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -54,22 +71,33 @@ class LoadingButton @JvmOverloads constructor(
         setMeasuredDimension(w, h)
     }
 
-    private fun drawButton(canvas: Canvas){
-        drawRect(canvas)
-        drawText(canvas, "Download")
+    private fun drawButton(canvas: Canvas) {
+        drawRect(canvas, resources.getColor(R.color.button_bg, context.theme))
+        if (progress > 0) {
+            drawRect(canvas, resources.getColor(R.color.anim_button_bg, context.theme), progress)
+            drawText(canvas, resources.getString(R.string.button_loading))
+        } else {
+            drawText(canvas, resources.getString(R.string.button_name))
+        }
     }
 
-    private fun drawRect(canvas: Canvas){
-        paint.color = resources.getColor(R.color.button_bg, context.theme)
+    private fun drawRect(canvas: Canvas, color: Int, progress: Float = widthSize) {
+        paint.color = color
         canvas.drawRect(
             RectF(
-                0f, 0f, widthSize, heightSize
-        ), paint)
+                0f, 0f, progress, heightSize
+            ), paint
+        )
     }
 
-    private fun drawText(canvas: Canvas, text: String){
+    private fun drawText(canvas: Canvas, text: String) {
         paint.color = resources.getColor(R.color.button_txt_color, context.theme)
-        canvas.drawText(text, widthSize/2, heightSize/2 - ((paint.descent() + paint.ascent()) / 2) , paint)
+        canvas.drawText(
+            text,
+            widthSize / 2,
+            heightSize / 2 - ((paint.descent() + paint.ascent()) / 2),
+            paint
+        )
     }
 
 }
