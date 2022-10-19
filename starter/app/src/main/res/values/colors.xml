@@ -8,4 +8,5 @@
     <color name="anim_button_bg">#002E3C</color>
     <color name="button_txt_color">#ACEFF2</color>
     <color name="loading_indicator_color">#C48219</color>
+    <color name="back_button_color">#ACB82F</color>
 </resources>
