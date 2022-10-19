@@ -2,7 +2,6 @@ package com.udacity
 
 import android.app.DownloadManager
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -12,11 +11,10 @@ import android.os.Bundle
 import android.widget.RadioButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import java.util.*
-
 
 class MainActivity : AppCompatActivity() {
 
@@ -25,13 +23,18 @@ class MainActivity : AppCompatActivity() {
     private var radioButtonText = ""
 
     private lateinit var notificationManager: NotificationManager
-    private lateinit var pendingIntent: PendingIntent
-    private lateinit var action: NotificationCompat.Action
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+
+        notificationManager = ContextCompat.getSystemService(
+            this,
+            NotificationManager::class.java
+        ) as NotificationManager
+
+        notificationManager.cancelNotifications()
 
         registerReceiver(receiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
 
@@ -58,6 +61,10 @@ class MainActivity : AppCompatActivity() {
             custom_button.isEnabled = true
         }
 
+        createChannel(
+            this, getString(R.string.notification_channel_id),
+            getString(R.string.notification_channel_name)
+        )
 
     }
 
@@ -83,14 +90,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     companion object {
-        private val URL_LIST = listOf<String>("https://github.com/bumptech/glide","https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter","https://github.com/square/retrofit")
+        private val URL_LIST = listOf<String>(
+            "https://github.com/bumptech/glide",
+            "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter",
+            "https://github.com/square/retrofit"
+        )
         private const val URL =
             "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter/archive/master.zip"
         private const val CHANNEL_ID = "channelId"
     }
 
 
-    private fun DownloadManager.addListener(context: Context){
+    private fun DownloadManager.addListener(context: Context) {
+
         val query = DownloadManager.Query()
         query.setFilterById(downloadID)
         val cursor = (context.getSystemService(DOWNLOAD_SERVICE) as DownloadManager)
@@ -104,11 +116,12 @@ class MainActivity : AppCompatActivity() {
                         .query(query)
                     cursor.moveToFirst()
                     val status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))
-                    when(status){
+                    when (status) {
                         DownloadManager.STATUS_SUCCESSFUL -> {
                             runOnUiThread {
-                                Toast.makeText(context, "Success",Toast.LENGTH_LONG).show()
                                 timer.cancel()
+                                Toast.makeText(context, getText(R.string.download_success), Toast.LENGTH_LONG).show()
+                                notificationManager.sendNotification(getString(R.string.notification_description), context)
                             }
                         }
                         DownloadManager.STATUS_FAILED -> timer.cancel()
@@ -117,14 +130,11 @@ class MainActivity : AppCompatActivity() {
                         DownloadManager.STATUS_PENDING -> {}
                         DownloadManager.STATUS_FAILED -> {
                             runOnUiThread {
-                                Toast.makeText(context, "Failed",Toast.LENGTH_LONG).show()
                                 timer.cancel()
+                                Toast.makeText(context, getText(R.string.download_fail), Toast.LENGTH_LONG).show()
+                                notificationManager.sendNotification(getString(R.string.download_fail), context)
                             }
                         }
-                    }
-                    if (status == DownloadManager.STATUS_RUNNING) {
-                    } else if (status == DownloadManager.STATUS_SUCCESSFUL) {
-                        timer.cancel()
                     }
                 }
             }, 100, 1)

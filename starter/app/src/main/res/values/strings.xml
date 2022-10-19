@@ -7,10 +7,16 @@
     <string name="notification_title">Udacity: Android Kotlin Nanodegree </string>
     <string name="notification_description">The Project 3 repository is downloaded</string>
     <string name="notification_button">See changes</string>
+    <string name="notification_channel_id">Download_Service_ID</string>
+    <string name="notification_channel_name">Download Notification</string>
+
 
     <string name="button_name">Click me</string>
     <string name="button_loading">We are loading </string>
     <string name="title_activity_detail">DetailActivity</string>
+
+    <string name="download_success">Download Completed Successfully</string>
+    <string name="download_fail">Download Failed</string>
     
     <string name="download_option_1">Glide - Image Loading Library by BumpTech</string>
     <string name="download_option_2">LoadApp - Current repository by Udacity</string>
