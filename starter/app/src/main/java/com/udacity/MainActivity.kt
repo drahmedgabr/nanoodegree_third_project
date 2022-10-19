@@ -8,7 +8,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.widget.RadioButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -93,7 +92,7 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private val URL_LIST = listOf<String>(
             "https://github.com/bumptech/glide",
-            "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starterr",
+            "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter",
             "https://github.com/square/retrofit"
         )
         private const val URL =
