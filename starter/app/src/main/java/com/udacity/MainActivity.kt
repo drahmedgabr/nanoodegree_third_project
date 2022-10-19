@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.widget.RadioButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -92,7 +93,7 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private val URL_LIST = listOf<String>(
             "https://github.com/bumptech/glide",
-            "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter",
+            "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starterr",
             "https://github.com/square/retrofit"
         )
         private const val URL =
@@ -112,28 +113,36 @@ class MainActivity : AppCompatActivity() {
             timer.schedule(object : TimerTask() {
                 override fun run() {
                     query.setFilterById(downloadID)
-                    val cursor = (context.getSystemService(DOWNLOAD_SERVICE) as DownloadManager)
-                        .query(query)
-                    cursor.moveToFirst()
-                    val status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))
-                    when (status) {
-                        DownloadManager.STATUS_SUCCESSFUL -> {
-                            runOnUiThread {
-                                timer.cancel()
-                                Toast.makeText(context, getText(R.string.download_success), Toast.LENGTH_LONG).show()
-                                notificationManager.sendNotification(getString(R.string.notification_description), context)
+                    try {
+                        val cursor = (context.getSystemService(DOWNLOAD_SERVICE) as DownloadManager)
+                            .query(query)
+                        cursor.moveToFirst()
+                        val status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))
+                        when (status) {
+                            DownloadManager.STATUS_SUCCESSFUL -> {
+                                runOnUiThread {
+                                    timer.cancel()
+                                    Toast.makeText(context, getText(R.string.download_success), Toast.LENGTH_SHORT).show()
+                                    notificationManager.sendNotification(getString(R.string.notification_description), context)
+                                }
+                            }
+                            DownloadManager.STATUS_FAILED -> timer.cancel()
+                            DownloadManager.STATUS_RUNNING -> {}
+                            DownloadManager.STATUS_PAUSED -> {}
+                            DownloadManager.STATUS_PENDING -> {}
+                            DownloadManager.STATUS_FAILED -> {
+                                runOnUiThread {
+                                    timer.cancel()
+                                    Toast.makeText(context, getText(R.string.download_fail), Toast.LENGTH_SHORT).show()
+                                    notificationManager.sendNotification(getString(R.string.download_fail), context)
+                                }
                             }
                         }
-                        DownloadManager.STATUS_FAILED -> timer.cancel()
-                        DownloadManager.STATUS_RUNNING -> {}
-                        DownloadManager.STATUS_PAUSED -> {}
-                        DownloadManager.STATUS_PENDING -> {}
-                        DownloadManager.STATUS_FAILED -> {
-                            runOnUiThread {
-                                timer.cancel()
-                                Toast.makeText(context, getText(R.string.download_fail), Toast.LENGTH_LONG).show()
-                                notificationManager.sendNotification(getString(R.string.download_fail), context)
-                            }
+                    } catch (e: Exception) {
+                        runOnUiThread {
+                            timer.cancel()
+                            Toast.makeText(context, getText(R.string.download_fail), Toast.LENGTH_SHORT).show()
+                            notificationManager.sendNotification(getString(R.string.download_fail), context)
                         }
                     }
                 }
