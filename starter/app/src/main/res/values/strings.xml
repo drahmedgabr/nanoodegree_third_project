@@ -25,7 +25,7 @@
     <string name="download_img_desc">Download Image</string>
 
     <string name="select_option">Please Select which file to download</string>
-    <string name="file_name_label">File Name</string>
-    <string name="status_label">Status</string>
+    <string name="file_name_label">File Name:</string>
+    <string name="status_label">Status:</string>
     <string name="ok">OK</string>
 </resources>
