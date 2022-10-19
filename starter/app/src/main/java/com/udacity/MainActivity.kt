@@ -116,13 +116,23 @@ class MainActivity : AppCompatActivity() {
                         val cursor = (context.getSystemService(DOWNLOAD_SERVICE) as DownloadManager)
                             .query(query)
                         cursor.moveToFirst()
-                        val status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))
+                        val status =
+                            cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))
                         when (status) {
                             DownloadManager.STATUS_SUCCESSFUL -> {
                                 runOnUiThread {
                                     timer.cancel()
-                                    Toast.makeText(context, getText(R.string.download_success), Toast.LENGTH_SHORT).show()
-                                    notificationManager.sendNotification(getString(R.string.notification_description), context)
+                                    Toast.makeText(
+                                        context,
+                                        getText(R.string.download_success),
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    notificationManager.sendNotification(
+                                        getString(R.string.notification_description),
+                                        context,
+                                        true,
+                                        radioButtonText
+                                    )
                                 }
                             }
                             DownloadManager.STATUS_FAILED -> timer.cancel()
@@ -132,16 +142,34 @@ class MainActivity : AppCompatActivity() {
                             DownloadManager.STATUS_FAILED -> {
                                 runOnUiThread {
                                     timer.cancel()
-                                    Toast.makeText(context, getText(R.string.download_fail), Toast.LENGTH_SHORT).show()
-                                    notificationManager.sendNotification(getString(R.string.download_fail), context)
+                                    Toast.makeText(
+                                        context,
+                                        getText(R.string.download_fail),
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    notificationManager.sendNotification(
+                                        getString(R.string.download_fail),
+                                        context,
+                                        false,
+                                        radioButtonText
+                                    )
                                 }
                             }
                         }
                     } catch (e: Exception) {
                         runOnUiThread {
                             timer.cancel()
-                            Toast.makeText(context, getText(R.string.download_fail), Toast.LENGTH_SHORT).show()
-                            notificationManager.sendNotification(getString(R.string.download_fail), context)
+                            Toast.makeText(
+                                context,
+                                getText(R.string.download_fail),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            notificationManager.sendNotification(
+                                getString(R.string.download_fail),
+                                context,
+                                false,
+                                radioButtonText
+                            )
                         }
                     }
                 }

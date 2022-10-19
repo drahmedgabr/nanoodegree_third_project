@@ -13,7 +13,12 @@ private val NOTIFICATION_ID = 0
 private val REQUEST_CODE = 0
 private val FLAGS = 0
 
-fun NotificationManager.sendNotification(messageBody: String, applicationContext: Context) {
+fun NotificationManager.sendNotification(
+    messageBody: String,
+    applicationContext: Context,
+    status: Boolean,
+    fileName: String
+) {
 
     val contentIntent = Intent(applicationContext, MainActivity::class.java)
 
@@ -24,12 +29,16 @@ fun NotificationManager.sendNotification(messageBody: String, applicationContext
         PendingIntent.FLAG_UPDATE_CURRENT
     )
 
-        val actionIntent = Intent(applicationContext, DetailActivity::class.java)
-        val actionPendingIntent: PendingIntent = PendingIntent.getActivity(
-            applicationContext,
-            REQUEST_CODE,
-            actionIntent,
-            FLAGS)
+    val actionIntent = Intent(applicationContext, DetailActivity::class.java)
+    actionIntent.putExtra("status", status)
+    actionIntent.putExtra("file_name", fileName)
+
+    val actionPendingIntent: PendingIntent = PendingIntent.getActivity(
+        applicationContext,
+        REQUEST_CODE,
+        actionIntent,
+        PendingIntent.FLAG_UPDATE_CURRENT
+    )
 
 
     val builder = NotificationCompat.Builder(
@@ -48,11 +57,11 @@ fun NotificationManager.sendNotification(messageBody: String, applicationContext
         .setContentIntent(contentPendingIntent)
         .setAutoCancel(true)
 
-            .addAction(
-                R.drawable.ic_assistant_black_24dp,
-                applicationContext.getString(R.string.notification_button),
-                actionPendingIntent
-            )
+        .addAction(
+            R.drawable.ic_assistant_black_24dp,
+            applicationContext.getString(R.string.notification_button),
+            actionPendingIntent
+        )
 
         .setPriority(NotificationCompat.PRIORITY_HIGH)
 
